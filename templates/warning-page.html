@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Access Restricted</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background:#070b10;
+      color:#ff4d4d;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      margin:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+      padding:24px;
+    }
+    .card{
+      max-width:860px;
+      width:100%;
+      background:#0c121a;
+      border:1px solid rgba(255,77,77,0.35);
+      border-radius:14px;
+      padding:28px;
+      box-shadow:0 0 40px rgba(255,77,77,0.12);
+    }
+    .row{display:flex; gap:16px; align-items:flex-start;}
+    .badge{
+      width:64px; height:64px; border-radius:14px;
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(255,77,77,0.10);
+      border:1px solid rgba(255,77,77,0.25);
+      font-size:34px;
+      animation:pulse 1.6s infinite;
+    }
+    @keyframes pulse { 0%{opacity:.55} 50%{opacity:1} 100%{opacity:.55} }
+    h1{margin:0 0 8px 0; font-size:28px; letter-spacing:1px;}
+    p{margin:10px 0; color:#ffd0d0; line-height:1.5;}
+    .meta{
+      margin-top:18px;
+      padding-top:14px;
+      border-top:1px dashed rgba(255,77,77,0.25);
+      color:#b5b5b5;
+      font-size:13px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px 18px;
+    }
+    .meta span{opacity:.95}
+    .hint{
+      margin-top:14px;
+      color:#9aa4ad;
+      font-size:13px;
+    }
+    .sig{
+      margin-top:22px;
+      color:#7e8a95;
+      font-size:12px;
+      opacity:.9;
+    }
+    .red{color:#ff4d4d;}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="row">
+      <div class="badge">⚠</div>
+      <div>
+        <h1>UNAUTHORIZED ACCESS DETECTED</h1>
+        <p>This server does <b>not</b> accept direct IP connections. Access is permitted only via approved hostnames.</p>
+        <p class="red"><b>Your activity is being logged and monitored.</b></p>
+        <div class="meta">
+          <span>Reference: <b id="ref"></b></span>
+          <span>Time: <b id="t"></b></span>
+        </div>
+        <div class="hint">If you are a legitimate user, please use the official domain URL.</div>
+        <div class="sig">Security Monitoring • Reverse Proxy Hardening</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const now = new Date();
+    document.getElementById("t").textContent = now.toISOString();
+    document.getElementById("ref").textContent = String(Date.now());
+  </script>
+</body>
+</html>
