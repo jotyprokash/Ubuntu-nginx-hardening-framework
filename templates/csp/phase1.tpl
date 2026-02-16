@@ -1,0 +1,2 @@
+# CSP (Phase 1: Report-Only, permissive for SPA)
+add_header Content-Security-Policy-Report-Only "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self' https:; img-src 'self' data: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https: wss:; upgrade-insecure-requests; block-all-mixed-content; report-uri /csp-report;" always;
