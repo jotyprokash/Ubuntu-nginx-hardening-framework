@@ -1,4 +1,3 @@
-\
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -62,8 +61,8 @@ tmpl_render() {
     key="${kv%%=*}"
     val="${kv#*=}"
     # Escape for sed replacement
-    val="$(printf '%s' "$val" | sed -e 's/[\/&]/\\&/g')"
-    sed -i "s/{{${key}}}/${val}/g" "$tmp"
+    val="$(printf '%s' "$val" | sed -e 's/[\/&|]/\\&/g')"
+    sed -i "s|{{${key}}}|${val}|g" "$tmp"
   done
   mkdir -p "$(dirname "$dest")"
   mv "$tmp" "$dest"
@@ -264,7 +263,7 @@ apply() {
   [[ -f "$csp_tpl" ]] || die "Invalid CSP phase template: $csp_tpl"
 
   local csp_header
-  csp_header="$(cat "$csp_tpl")"
+  csp_header="$(grep -v '^[[:space:]]*#' "$csp_tpl" | tr -d '\r\n')"
 
   # Render and write files from templates
   tmpl_render "$(dirname "$0")/../templates/ratelimit.tpl" "$ratelimit_conf" \
