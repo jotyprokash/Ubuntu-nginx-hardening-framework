@@ -235,9 +235,11 @@ apply() {
   local ssl_key="${ssl#*|}"
   log "Detected SSL cert=$ssl_cert key=$ssl_key"
 
-  # Derive safe zone names
+  # Derive safe zone names (limited to 20 chars to keep total zone name under 32)
   local safe_dom
-  safe_dom="$(echo "$domain" | tr '.-' '__')"
+  safe_dom="$(echo "$domain" | tr '.-' '__' | cut -c1-20)"
+  [[ -n "$safe_dom" ]] || die "Failed to derive safe_dom from domain: $domain"
+
   local zone_req="vapt_${safe_dom}_req"
   local zone_conn="vapt_${safe_dom}_conn"
 
