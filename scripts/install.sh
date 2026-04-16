@@ -251,11 +251,32 @@ apply() {
   backup_file "$domain" "$ratelimit_conf" "$ts"
   backup_file "$domain" "$snippet" "$ts"
 
+  # Create a working copy of the vhost to perform modifications
+  local vhost_tmp
+  vhost_tmp="$(mktemp)"
+  cp "$vhost" "$vhost_tmp"
+
+  # 1. Clean up any existing hardening lines from previous runs (Idempotency)
+  # This ensures any old/broken names (like vapt_conn) are removed before adding new ones.
+  sed -i '/vapt_.*_conn/d' "$vhost_tmp"
+  sed -i '/vapt_.*_req/d' "$vhost_tmp"
+  sed -i '/include.*security\.conf/d' "$vhost_tmp"
+  sed -i '/location.*\/csp-report/,/}/d' "$vhost_tmp"
+  sed -i '/Strict-Transport-Security/d' "$vhost_tmp"
+
+  # 2. Inject new hardening configurations
+  inject_once_after_server_name "$vhost_tmp" "$domain" "include /etc/nginx/snippets/${domain}.security.conf;"
+  inject_location_csp_report "$vhost_tmp"
+  inject_limits_into_location_root "$vhost_tmp" "$zone_conn" "$zone_req" "$conn" "$burst"
+  inject_hsts "$vhost_tmp" "$hsts"
+
   if [[ "$dry" == "1" ]]; then
+    log "[DRY-RUN] Planned changes for $vhost:"
+    diff -u "$vhost" "$vhost_tmp" || true
     log "[DRY-RUN] Would write ratelimit: $ratelimit_conf"
     log "[DRY-RUN] Would write snippet:   $snippet"
-    log "[DRY-RUN] Would modify vhost:    $vhost"
     log "[DRY-RUN] Would reload nginx"
+    rm -f "$vhost_tmp"
     return 0
   fi
 
@@ -279,19 +300,8 @@ apply() {
   # Ensure vhost enabled
   ensure_enabled_symlink "$vhost"
 
-  # 1. Clean up any existing hardening lines from previous runs (Idempotency)
-  log "Removing old hardening lines from $vhost if present..."
-  sed -i '/vapt_.*_conn/d' "$vhost"
-  sed -i '/vapt_.*_req/d' "$vhost"
-  sed -i '/include.*security\.conf/d' "$vhost"
-  sed -i '/location.*\/csp-report/,/}/d' "$vhost"
-  sed -i '/Strict-Transport-Security/d' "$vhost"
-
-  # 2. Inject include, CSP endpoint, limits, HSTS
-  inject_once_after_server_name "$vhost" "$domain" "include /etc/nginx/snippets/${domain}.security.conf;"
-  inject_location_csp_report "$vhost"
-  inject_limits_into_location_root "$vhost" "$zone_conn" "$zone_req" "$conn" "$burst"
-  inject_hsts "$vhost" "$hsts"
+  # Replace vhost with modified version
+  mv "$vhost_tmp" "$vhost"
 
   # Ensure proxy_pass matches upstream? We won't rewrite automatically; just warn if mismatch.
   if ! grep -qE "proxy_pass\s+${upstream//\//\\/}\s*;" "$vhost"; then
