@@ -258,9 +258,9 @@ apply() {
 
   # 1. Clean up any existing hardening lines and comments (Idempotency)
   log "Removing old hardening lines and comments from $vhost if present..."
-  # Clean up directives
-  sed -i '/vapt_.*conn/d' "$vhost_tmp"
-  sed -i '/vapt_.*req/d' "$vhost_tmp"
+  # Clean up directives (catch any limit_req/limit_conn line using our vapt_ zones)
+  sed -i '/limit_conn.*vapt_/d' "$vhost_tmp"
+  sed -i '/limit_req.*vapt_/d' "$vhost_tmp"
   sed -i '/include.*security\.conf/d' "$vhost_tmp"
   sed -i '/location.*\/csp-report/,/}/d' "$vhost_tmp"
   sed -i '/Strict-Transport-Security/d' "$vhost_tmp"
