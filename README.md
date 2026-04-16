@@ -1,5 +1,11 @@
 # Ubuntu NGINX Hardening Framework
 
+![NGINX](https://img.shields.io/badge/NGINX-009639?style=flat-square&logo=nginx&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=flat-square&logo=ubuntu&logoColor=white)
+![Shell](https://img.shields.io/badge/Shell_Script-121011?style=flat-square&logo=gnu-bash&logoColor=white)
+![Security](https://img.shields.io/badge/Security-Hardened-success?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)
+
 A deterministic, idempotent hardening framework for NGINX reverse-proxy environments on Ubuntu. Designed for operational transparency and phased security rollouts.
 
 ## Core Capabilities
@@ -8,18 +14,6 @@ A deterministic, idempotent hardening framework for NGINX reverse-proxy environm
 - **Rate & Connection Hardening**: Domain-scoped shared memory zones for surgical traffic control (DDoS/Brute-force mitigation).
 - **Surface Area Reduction**: Prevents direct IP access via a dedicated catch-all block with automated logging.
 - **Transparent Verification**: Unified diff-based dry-runs show exact configuration changes before they affect production.
-
-## Architecture
-```
-  Traffic (443)
-      |
-      v
-  [ NGINX Proxy ] <--- [ Security Snippets ] (HSTS, CSP, XSS, Fingerprinting)
-      |         |
-      |         +---- [ Rate Limit Zones ] (limit_req, limit_conn)
-      v
-  [ Upstream App ]    (Docker Container / Localhost / Private IP)
-```
 
 ## Operations
 
