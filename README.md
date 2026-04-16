@@ -1,98 +1,61 @@
-# Ubuntu NGINX Reverse Proxy Hardening Framework (v1.1.0)
+# Ubuntu NGINX Hardening Framework
 
-Production-grade, **domain-scoped** NGINX hardening for Ubuntu reverse-proxy hosts.
+A deterministic, idempotent hardening framework for NGINX reverse-proxy environments on Ubuntu. Designed for operational transparency and phased security rollouts.
 
-## What it does (per-domain / per-vhost)
-- Creates **rate-limit zones** (HTTP context) in `/etc/nginx/conf.d/`
-- Creates **host-only security snippet** in `/etc/nginx/snippets/`
-- Injects the snippet into the target vhost (by `server_name`)
-- Adds safe **HSTS** rollout (default `max-age=300`)
-- Adds **CSP Report-Only** in phases (0→1→2→3)
-- Adds **/csp-report** endpoint (204) for CSP reports
-- Adds **default catch-all** for direct IP access: serves a warning page + logs hits
-- Logs to: `/var/log/nginx-hardening.log`
-- Supports `--dry-run` and `--rollback`
+## Core Capabilities
+- **Idempotent Execution**: Automatically detects and synchronizes managed security directives with zero configuration drift.
+- **Phased CSP Rollout**: Implements Content Security Policy in four granular "Report-Only" phases to ensure zero-downtime security upgrades.
+- **Rate & Connection Hardening**: Domain-scoped shared memory zones for surgical traffic control (DDoS/Brute-force mitigation).
+- **Surface Area Reduction**: Prevents direct IP access via a dedicated catch-all block with automated logging.
+- **Transparent Verification**: Unified diff-based dry-runs show exact configuration changes before they affect production.
 
-## Scope & Assumptions
-- OS: **Ubuntu**
-- NGINX: system package (e.g. `nginx/1.24.0`)
-- Setup: **reverse proxy** (you provide `--upstream`)
-- TLS: Certbot-managed or standard LE layout
-- **Host-only**: will not change ports or upstream behavior beyond safe headers / limits
+## Architecture
+```
+  Traffic (443)
+      |
+      v
+  [ NGINX Proxy ] <--- [ Security Snippets ] (HSTS, CSP, XSS, Fingerprinting)
+      |         |
+      |         +---- [ Rate Limit Zones ] (limit_req, limit_conn)
+      v
+  [ Upstream App ]    (Docker Container / Localhost / Private IP)
+```
 
----
+## Operations
 
-## Quickstart
-
-### Install (apply)
+### Installation / Synchronization
+Applies hardening or synchronizes existing configs. Idempotent: safe to run multiple times.
 ```bash
 sudo bash scripts/install.sh \
   --domain vapt.backoffice.saafir.co \
   --upstream http://localhost:1001 \
-  --hsts-max-age 300 \
   --csp-phase 3 \
-  --warning-page on
+  --hsts-max-age 300
 ```
 
-### Dry-run
+### Transparent Verification (Dry-Run)
+Generates a `diff -u` of exactly what will change in your vhost without touching production files.
 ```bash
-sudo bash scripts/install.sh --domain vapt.backoffice.saafir.co --upstream http://localhost:1001 --dry-run
+sudo bash scripts/install.sh --domain vapt.backoffice.saafir.co --dry-run
 ```
 
-### Rollback (restores latest backup for domain)
+### Recovery (Rollback)
+Restores the most recent backup and removes all framework-generated artifacts.
 ```bash
 sudo bash scripts/install.sh --domain vapt.backoffice.saafir.co --rollback
 ```
 
----
+## Security Profiles
+### CSP Phases (Report-Only)
+- **Phase 0**: Baseline (No CSP)
+- **Phase 1**: Permissive (Allows legacy inline/eval for initial auditing)
+- **Phase 2**: Strict Logic (Blocks `unsafe-eval`)
+- **Phase 3**: Maximum Security (Blocks `unsafe-inline`)
 
-## CSP Phases (Report-Only)
-- Phase 0: no CSP
-- Phase 1: permissive (may include unsafe-inline/eval)
-- Phase 2: remove `unsafe-eval`
-- Phase 3: remove `unsafe-inline` (strictest Report-Only)
-
-You should start with Phase 1, verify the app, review CSP reports, then tighten.
-
----
-
-## Files created/modified
-Created:
-- `/etc/nginx/conf.d/<domain>.ratelimit.conf`
-- `/etc/nginx/snippets/<domain>.security.conf`
-- `/etc/nginx/sites-available/00-default-ip-block.conf` (optional)
-- `/var/www/security-warning/index.html` (optional)
-- `/var/log/nginx/ip_access_attempts.log` (optional)
-
-Modified:
-- `/etc/nginx/sites-available/<vhost>` for the domain (injects include + limits + CSP endpoint + HSTS)
-
-Backups:
-- `/var/backups/nginx-hardening/<domain>/<timestamp>/...`
-
----
-
-## Architecture (high level)
-
-```
-Internet
-  |
-  v
-NGINX (443)
-  |-- vhost for <domain>  ---> proxy_pass to upstream
-  |-- security snippet     ---> headers, method allowlist, timeouts
-  |-- ratelimit zones      ---> limit_req_zone / limit_conn_zone (http context)
-  |
-  |-- default_server (IP hits) ---> warning page + access_log
-```
-
----
-
-## Notes
-- OCSP stapling depends on certificate containing an OCSP URI. If LE chain lacks it in your build, NGINX warns and ignores stapling.
-- This framework keeps changes domain-scoped to avoid impacting other sites on the same host.
-
----
+### Configuration Paths
+- **Snippets**: `/etc/nginx/snippets/<domain>.security.conf` (Headers & CSP)
+- **Zones**: `/etc/nginx/conf.d/<domain>.ratelimit.conf` (Shared memory definitions)
+- **Logs**: `/var/log/nginx-hardening.log` (Internal audit trail)
 
 ## License
-MIT (see LICENSE)
+MIT (See LICENSE)
