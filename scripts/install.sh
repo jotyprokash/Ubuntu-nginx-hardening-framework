@@ -432,7 +432,21 @@ cleanup_vhost() {
   log "Cleanup complete for $domain"
 }
 
-# ... (rest of the script)
+# ------------------------
+# Args
+# ------------------------
+DOMAIN=""
+UPSTREAM=""
+REQ_RATE="20r/s"
+BURST="40"
+CONN="30"
+HSTS_MAXAGE="300"
+CSP_PHASE="1"
+WARNING_PAGE="on"
+DRY_RUN="0"
+DO_ROLLBACK="0"
+DO_CLEANUP="0"
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --domain) DOMAIN="$2"; shift 2;;
