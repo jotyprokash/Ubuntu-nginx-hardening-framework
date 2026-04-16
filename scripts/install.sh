@@ -42,6 +42,7 @@ Options:
   --warning-page      on|off (default on) - direct IP warning page + logging
   --dry-run           Show intended actions only
   --rollback          Restore latest backups for domain
+  --cleanup           Deterministic reset: wipes all framework hardening
 
 Examples:
   sudo bash scripts/install.sh --domain vapt.backoffice.saafir.co --upstream http://localhost:1001 --csp-phase 3

@@ -22,7 +22,7 @@ A deterministic, idempotent hardening framework for NGINX reverse-proxy environm
 ### Phase 1: Verification (Dry-Run)
 Generate a `diff -u` of exactly what will change in your vhost without touching production files. This ensures your configuration remains valid after hardening.
 ```bash
-sudo bash scripts/install.sh --domain app.example.com --dry-run
+sudo bash scripts/install.sh --domain app.example.com --upstream http://localhost:8080 --dry-run
 ```
 
 ### Phase 2: Deployment (Hardening)
@@ -37,8 +37,12 @@ sudo bash scripts/install.sh \
 ```
 
 ### Phase 3: Deterministic Reset (Cleanup)
-Surgically removes all framework-managed hardening lines and associated architecture files. Does not rely on backups; provides a guaranteed "Fresh Start."
+Surgically removes all framework-managed hardening lines and associated architecture files.
 ```bash
+# Preview what will be cleaned up
+sudo bash scripts/install.sh --domain app.example.com --cleanup --dry-run
+
+# Perform full cleanup
 sudo bash scripts/install.sh --domain app.example.com --cleanup
 ```
 
