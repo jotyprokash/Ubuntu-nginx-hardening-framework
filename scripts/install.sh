@@ -256,13 +256,21 @@ apply() {
   vhost_tmp="$(mktemp)"
   cp "$vhost" "$vhost_tmp"
 
-  # 1. Clean up any existing hardening lines from previous runs (Idempotency)
-  # This ensures any old/broken names (like vapt_conn) are removed before adding new ones.
-  sed -i '/vapt_.*_conn/d' "$vhost_tmp"
-  sed -i '/vapt_.*_req/d' "$vhost_tmp"
+  # 1. Clean up any existing hardening lines and comments (Idempotency)
+  log "Removing old hardening lines and comments from $vhost if present..."
+  # Clean up directives
+  sed -i '/vapt_.*conn/d' "$vhost_tmp"
+  sed -i '/vapt_.*req/d' "$vhost_tmp"
   sed -i '/include.*security\.conf/d' "$vhost_tmp"
   sed -i '/location.*\/csp-report/,/}/d' "$vhost_tmp"
   sed -i '/Strict-Transport-Security/d' "$vhost_tmp"
+  
+  # Clean up our specific comment headers to avoid duplicates
+  sed -i '/# Enforce rate & connection limits/d' "$vhost_tmp"
+  sed -i '/# CSP report endpoint/d' "$vhost_tmp"
+  sed -i '/# Include host-only security hardening/d' "$vhost_tmp"
+  sed -i '/# CSP report endpoint (POC)/d' "$vhost_tmp"
+  sed -i '/# HSTS/d' "$vhost_tmp"
 
   # 2. Inject new hardening configurations
   inject_once_after_server_name "$vhost_tmp" "$domain" "include /etc/nginx/snippets/${domain}.security.conf;"
