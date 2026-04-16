@@ -4,6 +4,8 @@
 ![NGINX](https://img.shields.io/badge/NGINX-009639?style=flat-square&logo=nginx&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=flat-square&logo=ubuntu&logoColor=white)
 ![Security](https://img.shields.io/badge/Security-Hardened-success?style=flat-square)
+![DDoS Protection](https://img.shields.io/badge/DDoS-Protected-orange?style=flat-square)
+![CSP](https://img.shields.io/badge/CSP-Validated-blueviolet?style=flat-square)
 ![OpenSSL](https://img.shields.io/badge/OpenSSL-Certified-blue?style=flat-square&logo=openssl&logoColor=white)
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)
