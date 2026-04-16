@@ -47,7 +47,7 @@ sudo bash scripts/install.sh --domain app.example.com --cleanup --dry-run
 sudo bash scripts/install.sh --domain app.example.com --cleanup
 ```
 
----
+
 
 ## Security Profiles
 ### CSP Phases (Report-Only)
@@ -61,5 +61,3 @@ sudo bash scripts/install.sh --domain app.example.com --cleanup
 - **Zones**: `/etc/nginx/conf.d/<domain>.ratelimit.conf` (Shared memory definitions)
 - **Logs**: `/var/log/nginx-hardening.log` (Internal audit trail)
 
-## License
-MIT (See LICENSE)
