@@ -279,7 +279,15 @@ apply() {
   # Ensure vhost enabled
   ensure_enabled_symlink "$vhost"
 
-  # Inject include, CSP endpoint, limits, HSTS
+  # 1. Clean up any existing hardening lines from previous runs (Idempotency)
+  log "Removing old hardening lines from $vhost if present..."
+  sed -i '/vapt_.*_conn/d' "$vhost"
+  sed -i '/vapt_.*_req/d' "$vhost"
+  sed -i '/include.*security\.conf/d' "$vhost"
+  sed -i '/location.*\/csp-report/,/}/d' "$vhost"
+  sed -i '/Strict-Transport-Security/d' "$vhost"
+
+  # 2. Inject include, CSP endpoint, limits, HSTS
   inject_once_after_server_name "$vhost" "$domain" "include /etc/nginx/snippets/${domain}.security.conf;"
   inject_location_csp_report "$vhost"
   inject_limits_into_location_root "$vhost" "$zone_conn" "$zone_req" "$conn" "$burst"
