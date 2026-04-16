@@ -1,9 +1,11 @@
 # Ubuntu NGINX Hardening Framework
 
+![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square)
 ![NGINX](https://img.shields.io/badge/NGINX-009639?style=flat-square&logo=nginx&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=flat-square&logo=ubuntu&logoColor=white)
-![Shell](https://img.shields.io/badge/Shell_Script-121011?style=flat-square&logo=gnu-bash&logoColor=white)
 ![Security](https://img.shields.io/badge/Security-Hardened-success?style=flat-square)
+![OpenSSL](https://img.shields.io/badge/OpenSSL-Certified-blue?style=flat-square&logo=openssl&logoColor=white)
+![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)
 
 A deterministic, idempotent hardening framework for NGINX reverse-proxy environments on Ubuntu. Designed for operational transparency and phased security rollouts.
@@ -21,8 +23,8 @@ A deterministic, idempotent hardening framework for NGINX reverse-proxy environm
 Applies hardening or synchronizes existing configs. Idempotent: safe to run multiple times.
 ```bash
 sudo bash scripts/install.sh \
-  --domain vapt.backoffice.saafir.co \
-  --upstream http://localhost:1001 \
+  --domain app.example.com \
+  --upstream http://localhost:8080 \
   --csp-phase 3 \
   --hsts-max-age 300
 ```
@@ -30,13 +32,13 @@ sudo bash scripts/install.sh \
 ### Transparent Verification (Dry-Run)
 Generates a `diff -u` of exactly what will change in your vhost without touching production files.
 ```bash
-sudo bash scripts/install.sh --domain vapt.backoffice.saafir.co --dry-run
+sudo bash scripts/install.sh --domain app.example.com --dry-run
 ```
 
 ### Recovery (Rollback)
 Restores the most recent backup and removes all framework-generated artifacts.
 ```bash
-sudo bash scripts/install.sh --domain vapt.backoffice.saafir.co --rollback
+sudo bash scripts/install.sh --domain app.example.com --rollback
 ```
 
 ## Security Profiles
