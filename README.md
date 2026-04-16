@@ -7,7 +7,7 @@
 ![DDoS Protection](https://img.shields.io/badge/DDoS-Protected-orange?style=flat-square)
 ![CSP](https://img.shields.io/badge/CSP-Validated-blueviolet?style=flat-square)
 ![OpenSSL](https://img.shields.io/badge/OpenSSL-Certified-blue?style=flat-square&logo=openssl&logoColor=white)
-![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=flat-square)
+![Security](https://img.shields.io/badge/Security-CIS--Hardened-brightgreen?style=flat-square)
 
 A deterministic, idempotent hardening framework for NGINX reverse-proxy environments on Ubuntu. Designed for operational transparency and phased security rollouts.
 
