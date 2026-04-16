@@ -399,20 +399,40 @@ rollback() {
   log "Rollback complete for domain=$domain"
 }
 
-# ------------------------
-# Args
-# ------------------------
-DOMAIN=""
-UPSTREAM=""
-REQ_RATE="20r/s"
-BURST="40"
-CONN="30"
-HSTS_MAXAGE="300"
-CSP_PHASE="1"
-WARNING_PAGE="on"
-DRY_RUN="0"
-DO_ROLLBACK="0"
+cleanup_vhost() {
+  local domain="$1" dry="$2"
+  local vhost
+  vhost=$(find_vhost_file "$domain")
+  [[ -n "$vhost" ]] || die "Could not find vhost for domain: $domain"
 
+  if [[ "$dry" == "1" ]]; then
+    log "[DRY-RUN] Would perform full cleanup of $vhost"
+    return 0
+  fi
+
+  log "Performing full deterministic cleanup for $domain..."
+  sed -i '/limit_conn.*vapt_/d' "$vhost"
+  sed -i '/limit_req.*vapt_/d' "$vhost"
+  sed -i '/include.*security\.conf/d' "$vhost"
+  sed -i '/location.*\/csp-report/,/}/d' "$vhost"
+  sed -i '/Strict-Transport-Security/d' "$vhost"
+  sed -i '/# Enforce rate & connection limits/d' "$vhost"
+  sed -i '/# CSP report endpoint/d' "$vhost"
+  sed -i '/# Include host-only security hardening/d' "$vhost"
+  sed -i '/# HSTS/d' "$vhost"
+  
+  # Remove framework artifacts
+  rm -f "/etc/nginx/conf.d/${domain}.ratelimit.conf"
+  rm -f "/etc/nginx/snippets/${domain}.security.conf"
+  rm -f "/etc/nginx/sites-available/00-default-ip-block.conf"
+  rm -f "/etc/nginx/sites-enabled/00-default-ip-block.conf"
+
+  nginx_test
+  nginx_reload
+  log "Cleanup complete for $domain"
+}
+
+# ... (rest of the script)
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --domain) DOMAIN="$2"; shift 2;;
@@ -425,6 +445,7 @@ while [[ $# -gt 0 ]]; do
     --warning-page) WARNING_PAGE="$2"; shift 2;;
     --dry-run) DRY_RUN="1"; shift 1;;
     --rollback) DO_ROLLBACK="1"; shift 1;;
+    --cleanup) DO_CLEANUP="1"; shift 1;;
     -h|--help) usage; exit 0;;
     *) die "Unknown argument: $1";;
   esac
@@ -434,6 +455,11 @@ need_root
 touch "$LOG_FILE" || true
 
 [[ -n "$DOMAIN" ]] || { usage; die "--domain is required"; }
+
+if [[ "$DO_CLEANUP" == "1" ]]; then
+  cleanup_vhost "$DOMAIN" "$DRY_RUN"
+  exit 0
+fi
 
 if [[ "$DO_ROLLBACK" == "1" ]]; then
   rollback "$DOMAIN" "$DRY_RUN"
