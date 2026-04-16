@@ -368,13 +368,28 @@ rollback() {
     done < "${bdir}/MANIFEST.modified"
   fi
 
-  # Remove created files (best-effort)
+  # Remove created files (best-effort with syntax safety)
   if [[ -f "${bdir}/MANIFEST.created" ]]; then
     tac "${bdir}/MANIFEST.created" | while read -r created; do
-      if [[ -L "$created" ]]; then
-        rm -f "$created" && log "Removed symlink: $created"
-      elif [[ -f "$created" ]]; then
-        rm -f "$created" && log "Removed file: $created"
+      local was_link=0
+      [[ -L "$created" ]] && was_link=1
+      
+      # Attempt removal
+      rm -f "$created"
+      
+      # Safety Check: If removal breaks Nginx, restore as empty file
+      if ! nginx -t >/dev/null 2>&1; then
+        log "WARNING: Removing $created broke NGINX syntax. Restoring as empty file for stability."
+        if [[ "$was_link" == "1" ]]; then
+          # If it was a link, we need to ensure the target exists too
+          local target="/etc/nginx/sites-available/$(basename "$created")"
+          touch "$target"
+          ln -sf "$target" "$created"
+        else
+          touch "$created"
+        fi
+      else
+        log "Successfully removed: $created"
       fi
     done
   fi
