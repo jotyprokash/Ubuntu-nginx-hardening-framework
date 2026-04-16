@@ -32,7 +32,8 @@ sudo bash scripts/install.sh \
   --domain app.example.com \
   --upstream http://localhost:8080 \
   --csp-phase 3 \
-  --hsts-max-age 300
+  --hsts-max-age 300 \
+  --warning-page on
 ```
 
 ### Phase 3: Deterministic Reset (Cleanup)
