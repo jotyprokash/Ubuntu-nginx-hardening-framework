@@ -17,10 +17,16 @@ A deterministic, idempotent hardening framework for NGINX reverse-proxy environm
 - **Surface Area Reduction**: Prevents direct IP access via a dedicated catch-all block with automated logging.
 - **Transparent Verification**: Unified diff-based dry-runs show exact configuration changes before they affect production.
 
-## Operations
+## Operational Workflow
 
-### Installation / Synchronization
-Applies hardening or synchronizes existing configs. Idempotent: safe to run multiple times.
+### Phase 1: Verification (Dry-Run)
+Generate a `diff -u` of exactly what will change in your vhost without touching production files. This ensures your configuration remains valid after hardening.
+```bash
+sudo bash scripts/install.sh --domain app.example.com --dry-run
+```
+
+### Phase 2: Deployment (Hardening)
+Applies hardening or synchronizes existing configs. Atomic execution: only replaces files if NGINX syntax validation passes.
 ```bash
 sudo bash scripts/install.sh \
   --domain app.example.com \
@@ -29,17 +35,13 @@ sudo bash scripts/install.sh \
   --hsts-max-age 300
 ```
 
-### Transparent Verification (Dry-Run)
-Generates a `diff -u` of exactly what will change in your vhost without touching production files.
+### Phase 3: Deterministic Reset (Cleanup)
+Surgically removes all framework-managed hardening lines and associated architecture files. Does not rely on backups; provides a guaranteed "Fresh Start."
 ```bash
-sudo bash scripts/install.sh --domain app.example.com --dry-run
+sudo bash scripts/install.sh --domain app.example.com --cleanup
 ```
 
-### Recovery (Rollback)
-Restores the most recent backup and removes all framework-generated artifacts.
-```bash
-sudo bash scripts/install.sh --domain app.example.com --rollback
-```
+---
 
 ## Security Profiles
 ### CSP Phases (Report-Only)
