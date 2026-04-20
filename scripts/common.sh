@@ -44,15 +44,17 @@ backup_file() {
 
 detect_vhost_file() {
   local domain="$1"
+  local escaped_domain
+  escaped_domain="$(printf '%s' "$domain" | sed 's/\./\\./g')"
   # Prefer exact filename match if exists
   if [[ -f "/etc/nginx/sites-available/${domain}" ]]; then
     echo "/etc/nginx/sites-available/${domain}"
     return 0
   fi
 
-  # Search by server_name in sites-available
+  # Search by server_name in sites-available (exact domain token match)
   local matches
-  matches="$(grep -Rsl --include="*" -E "^\s*server_name\s+.*\b${domain}\b" /etc/nginx/sites-available 2>/dev/null || true)"
+  matches="$(grep -Rsl --include="*" -E "^\s*server_name\s+(.*\s)?${escaped_domain}(\s|;)" /etc/nginx/sites-available 2>/dev/null || true)"
   local count
   count="$(echo "$matches" | sed '/^\s*$/d' | wc -l | tr -d ' ')"
   if [[ "$count" -eq 1 ]]; then

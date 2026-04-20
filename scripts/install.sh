@@ -70,12 +70,14 @@ tmpl_render() {
 }
 
 find_vhost_file() {
-  # Finds sites-available file that contains server_name <domain>
+  # Finds sites-available file that contains server_name <domain> (exact match)
   local domain="$1"
+  local escaped_domain
+  escaped_domain="$(printf '%s' "$domain" | sed 's/\./\\./g')"
   local f
   for f in /etc/nginx/sites-available/*; do
     [[ -f "$f" ]] || continue
-    if grep -RqsE "^\s*server_name\s+.*\b${domain}\b" "$f"; then
+    if grep -qsE "^\s*server_name\s+(.*\s)?${escaped_domain}(\s|;)" "$f"; then
       echo "$f"; return 0
     fi
   done
@@ -150,7 +152,7 @@ inject_once_after_server_name() {
     BEGIN{done=0}
     {
       print $0
-      if(done==0 && $0 ~ "server_name" && $0 ~ dom){
+      if(done==0 && $0 ~ "server_name" && match($0, "(^|[[:space:]])" dom "([[:space:]]|;)")){
         print "    " ins
         done=1
       }
