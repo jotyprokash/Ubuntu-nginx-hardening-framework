@@ -172,7 +172,7 @@ inject_location_csp_report() {
         print ""
         print "    # CSP report endpoint (POC)"
         print "    location = /csp-report {"
-        print "        access_log /var/log/nginx/vapt_csp_report_access.log;"
+        print "        access_log /var/log/nginx/csp_report_access.log;"
         print "        return 204;"
         print "    }"
         print ""
@@ -243,8 +243,8 @@ apply() {
   safe_dom="$(echo "$domain" | tr '.-' '__' | cut -c1-20)"
   [[ -n "$safe_dom" ]] || die "Failed to derive safe_dom from domain: $domain"
 
-  local zone_req="vapt_${safe_dom}_req"
-  local zone_conn="vapt_${safe_dom}_conn"
+  local zone_req="${safe_dom}_req"
+  local zone_conn="${safe_dom}_conn"
 
   local ratelimit_conf="/etc/nginx/conf.d/${domain}.ratelimit.conf"
   local snippet="/etc/nginx/snippets/${domain}.security.conf"
@@ -261,9 +261,9 @@ apply() {
 
   # 1. Clean up any existing hardening lines and comments (Idempotency)
   log "Removing old hardening lines and comments from $vhost if present..."
-  # Clean up directives (catch any limit_req/limit_conn line using our vapt_ zones)
-  sed -i '/limit_conn.*vapt_/d' "$vhost_tmp"
-  sed -i '/limit_req.*vapt_/d' "$vhost_tmp"
+  # Clean up directives (catch any limit_req/limit_conn line using this domain's zones)
+  sed -i "/limit_conn.*${safe_dom}_/d" "$vhost_tmp"
+  sed -i "/limit_req.*${safe_dom}_/d" "$vhost_tmp"
   sed -i '/include.*security\.conf/d' "$vhost_tmp"
   sed -i '/location.*\/csp-report/,/}/d' "$vhost_tmp"
   sed -i '/Strict-Transport-Security/d' "$vhost_tmp"
@@ -414,8 +414,10 @@ cleanup_vhost() {
   fi
 
   log "Performing full deterministic cleanup for $domain..."
-  sed -i '/limit_conn.*vapt_/d' "$vhost"
-  sed -i '/limit_req.*vapt_/d' "$vhost"
+  local safe_dom
+  safe_dom="$(echo "$domain" | tr '.-' '__' | cut -c1-20)"
+  sed -i "/limit_conn.*${safe_dom}_/d" "$vhost"
+  sed -i "/limit_req.*${safe_dom}_/d" "$vhost"
   sed -i '/include.*security\.conf/d' "$vhost"
   sed -i '/location.*\/csp-report/,/}/d' "$vhost"
   sed -i '/Strict-Transport-Security/d' "$vhost"
