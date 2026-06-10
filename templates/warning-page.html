@@ -80,7 +80,17 @@
   </div>
   <script>
     const now = new Date();
-    document.getElementById("t").textContent = now.toLocaleString();
+    const options = {
+      timeZone: 'Asia/Dhaka',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    };
+    document.getElementById("t").textContent = now.toLocaleString('en-US', options);
     document.getElementById("ref").textContent = String(Date.now());
   </script>
 </body>

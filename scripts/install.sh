@@ -322,10 +322,12 @@ apply() {
   # Optional warning page + default_server
   if [[ "$warn" == "on" ]]; then
     mkdir -p /var/www/security-warning
-    if [[ ! -f /var/www/security-warning/index.html ]]; then
-      cp "$(dirname "$0")/../templates/warning-page.html" /var/www/security-warning/index.html
-      record_created "$domain" "/var/www/security-warning/index.html" "$ts"
+    # Backup existing to ensure changes to warning-page.html propagate on updates
+    if [[ -f /var/www/security-warning/index.html ]]; then
+      backup_file "$domain" "/var/www/security-warning/index.html" "$ts"
     fi
+    cp "$(dirname "$0")/../templates/warning-page.html" /var/www/security-warning/index.html
+    record_created "$domain" "/var/www/security-warning/index.html" "$ts"
 
     local default_conf="/etc/nginx/sites-available/00-default-ip-block.conf"
     # Backup if exists
