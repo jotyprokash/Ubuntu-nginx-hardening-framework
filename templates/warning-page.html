@@ -75,13 +75,12 @@
           <span>Time: <b id="t"></b></span>
         </div>
         <div class="hint">If you are a legitimate user, please use the official domain URL.</div>
-        <div class="sig">Security Monitoring • Reverse Proxy Hardening</div>
       </div>
     </div>
   </div>
   <script>
     const now = new Date();
-    document.getElementById("t").textContent = now.toISOString();
+    document.getElementById("t").textContent = now.toLocaleString();
     document.getElementById("ref").textContent = String(Date.now());
   </script>
 </body>
